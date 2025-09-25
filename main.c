@@ -14,6 +14,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include "aes_tables.h"
 
 /* =========================
    Required function signatures
@@ -122,7 +123,7 @@ void SubBytes(uint8_t state[16]) {
      *   - Define SBOX[256] table from FIPS-197
      *   - For i in 0..15: state[i] = SBOX[state[i]];
      */
-    (void)state; // remove after implementing
+    for(int i = 0; i <= 15; i++) state[i] = SBOX[state[i]];
 }
 
 void InvSubBytes(uint8_t state[16]) {
@@ -131,6 +132,7 @@ void InvSubBytes(uint8_t state[16]) {
      *   - For i in 0..15: state[i] = INV_SBOX[state[i]];
      */
     (void)state;
+    for(int i = 0; i <= 15; i++) state[i] = INV_SBOX[state[i]];
 }
 
 void ShiftRows(uint8_t state[16]) {
