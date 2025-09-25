@@ -119,19 +119,10 @@ static void print_help(void) {
    ========================= */
 
 void SubBytes(uint8_t state[16]) {
-    /* TODO:
-     *   - Define SBOX[256] table from FIPS-197
-     *   - For i in 0..15: state[i] = SBOX[state[i]];
-     */
     for(int i = 0; i <= 15; i++) state[i] = SBOX[state[i]];
 }
 
 void InvSubBytes(uint8_t state[16]) {
-    /* TODO:
-     *   - Define INV_SBOX[256]
-     *   - For i in 0..15: state[i] = INV_SBOX[state[i]];
-     */
-    (void)state;
     for(int i = 0; i <= 15; i++) state[i] = INV_SBOX[state[i]];
 }
 
@@ -152,33 +143,57 @@ void InvShiftRows(uint8_t state[16]) {
 }
 
 /* xtime helper (multiply by 0x02 in GF(2^8)) — useful for MixColumns */
-static inline uint8_t xtime(uint8_t x) {
-    return (uint8_t)((x & 0x80) ? ((x << 1) ^ 0x1B) : (x << 1));
-}
+static inline uint8_t xtime(uint8_t x){return (uint8_t)((x & 0x80) ? ((x << 1) ^ 0x1B) : (x << 1))};
+static uint8_t mul9(uint8_t x){return xtime(xtime(xtime(x))) ^ x;}
+static uint8_t mul11(uint8_t x){return xtime(xtime(xtime(x))) ^ xtime(x) ^ x;}
+static uint8_t mul13(uint8_t x){return xtime(xtime(xtime(x))) ^ xtime(xtime(x)) ^ x;}
+static uint8_t mul14(uint8_t x){return xtime(xtime(xtime(x))) ^ xtime(xtime(x)) ^ xtime(x);}
+
 
 void MixColumns(uint8_t state[16]) {
-    /* TODO:
-     *   - Process each column independently:
-     *       For column c, get s0=state[IDX(0,c)]..s3=state[IDX(3,c)]
-     *     Use:
-     *       mul2(x) = xtime(x)
-     *       mul3(x) = xtime(x) ^ x
-     *     Then:
-     *       s'0 = 02•s0 ⊕ 03•s1 ⊕ 01•s2 ⊕ 01•s3
-     *       s'1 = 01•s0 ⊕ 02•s1 ⊕ 03•s2 ⊕ 01•s3
-     *       s'2 = 01•s0 ⊕ 01•s1 ⊕ 02•s2 ⊕ 03•s3
-     *       s'3 = 03•s0 ⊕ 01•s1 ⊕ 01•s2 ⊕ 02•s3
-     *   - Write results back to the same column
-     */
     (void)state;
+    uint8_t s0,s1,s2,s3;
+    uint8_t t0,t1,t2,t3;
+
+    for(int i = 0; i < 4; i++){
+        s0 = state[IDX(0,i)];
+        s1 = state[IDX(1,i)];
+        s2 = state[IDX(2,i)];
+        s3 = state[IDX(3,i)];
+
+        t0 = xtime(s0) ^ (xtime(s1) ^ s1) ^ s2 ^ s3;
+        t1 = s0 ^ xtime(s1) ^ (xtime(s2) ^ s2) ^ s3;
+        t2 = s0 ^ s1 ^ xtime(s2) ^ (xtime(s3) ^ s3);
+        t3 = (xtime(s0) ^ s0) ^ s1 ^ s2 ^ xtime(s3);
+
+        state[IDX(0,i)] = t0;
+        state[IDX(1,i)] = t1;
+        state[IDX(2,i)] = t2;
+        state[IDX(3,i)] = t3;
+    }
 }
 
 void InvMixColumns(uint8_t state[16]) {
-    /* TODO:
-     *   - Use inverse matrix with multipliers 0x0E,0x0B,0x0D,0x09
-     *   - You may implement mul9/mul11/mul13/mul14 using xtime chains
-     */
-    (void)state;
+    uint8_t s0,s1,s2,s3;
+    uint8_t t0,t1,t2,t3;
+
+    for(int i = 0; i < 4; i++){
+        s0 = state[IDX(0,i)];
+        s1 = state[IDX(1,i)];
+        s2 = state[IDX(2,i)];
+        s3 = state[IDX(3,i)];
+
+        t0 = mul14(s0) ^ mul11(s1) ^ mul13(s2) ^ mul9(s3);
+        t1 = mul9(s0) ^ mul14(s1) ^ mul11(s2) ^ mul13(s3);
+        t2 = mul13(s0) ^ mul9(s1) ^ mul14(s2) ^ mul11(s3);
+        t3 = mul11(s0) ^ mul13(s1) ^ mul9(s2) ^ mul14(s3);
+
+        state[IDX(0,i)] = t0;
+        state[IDX(1,i)] = t1;
+        state[IDX(2,i)] = t2;
+        state[IDX(3,i)] = t3;
+    }
+
 }
 
 void AddRoundKey(uint8_t state[16], const uint8_t roundKey[16]) {
