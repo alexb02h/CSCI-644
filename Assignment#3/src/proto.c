@@ -8,8 +8,14 @@
 
 // Build a simple message for the echo baseline.
 // TODO: (Optional) change the payload content (e.g., include your name or a counter).
-int proto_build_client_message(char* out, size_t outsz) {
-    return snprintf(out, outsz, "HELLO FROM ALEX AND ERIK");
+int proto_build_client_message(char* out, size_t outsz, int test) {
+    time_t now = time(NULL);
+
+    time_t pt_timestamp = now - (8 * 3600);
+    struct tm* pt_time = gmtime(&pt_timestamp);
+
+    if(test == 1)return snprintf(out, outsz, "HELLO FROM ALEX AND ERIK");
+    else return snprintf(out,outsz, "%04d-%02d-%02d %02d:%02d:%02d PT", pt_time->tm_year+1900,pt_time->tm_mon+1,pt_time->tm_mday,pt_time->tm_hour,pt_time->tm_min,pt_time->tm_sec);
 }
 
 // Server handler for baseline: just echo back the same line.

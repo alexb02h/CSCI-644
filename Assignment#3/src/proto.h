@@ -3,7 +3,7 @@
 #include <stddef.h>
 
 // Baseline: ECHO protocol
-int proto_build_client_message(char* out, size_t outsz);
+int proto_build_client_message(char* out, size_t outsz,int test);
 int proto_handle_server_request(const char* in_line, char* out_line, size_t outsz);
 
 // --------- TODOs for Time Converter ---------

@@ -238,7 +238,7 @@ int tls_server_accept(int listen_fd, mbedtls_ssl_context* out_ssl, int* out_clie
         if ((ret = mbedtls_x509_crt_parse_file(&srvcert, "../certs/server.crt.pem")) < 0) {
             die_mbed("x509_crt_parse_file(server)", ret); close(cfd); return -1;
         }
-        if ((ret = mbedtls_pk_parse_keyfile(&pkey, "../certs/server.key.pem", NULL)) < 0) {
+        if ((ret = mbedtls_pk_parse_keyfile(&pkey, "../certs/server.key.pem", NULL,mbedtls_ctr_drbg_random,&ctr_drbg)) < 0) {
             die_mbed("pk_parse_keyfile(server)", ret); close(cfd); return -1;
         }
 

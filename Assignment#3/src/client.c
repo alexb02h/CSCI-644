@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <time.h>
 
 #include "common.h"
 #include "tls_utils.h"
@@ -23,7 +24,9 @@ int main(int argc, char** argv) {
     // -------- Baseline: send an echo message --------
     // TODO: Replace this to build and send your PT time message.
     char line[MAX_LINE];
-    proto_build_client_message(line, sizeof line);
+    proto_build_client_message(line, sizeof line,22);
+    printf("Sending to server: %s\n", line);
+
     if (tls_send_line(&ssl, line) < 0) {
         fprintf(stderr, "send failed\n");
         goto cleanup;
